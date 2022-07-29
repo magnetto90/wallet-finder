@@ -3,7 +3,10 @@
     style="background: linear-gradient(180deg, rgba(74,54,83,1) 0%, rgba(8,0,11,0.9374124649859944) 45%);"
   >
     <v-container>
-      <v-card class="main">
+      <v-card 
+        class="main"
+        shaped
+      >
         
         <h1>Wallet Finder</h1>
         <v-divider class="ma-4"></v-divider>
@@ -16,6 +19,8 @@
         </v-btn>
         <v-text-field
           v-model="privateKey"
+          :success="privateKey.length == 66"
+          :error="privateKey.length != 66"
         >
         </v-text-field>
         <v-btn
