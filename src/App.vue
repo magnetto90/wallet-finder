@@ -29,6 +29,7 @@
         <p>{{plyBalance}}</p>
         <p>{{etcBalance}}</p>
         <p>{{vlsBalance}}</p>
+        <p>{{avaBalance}}</p>
       </v-card>
     </v-container>
 
@@ -47,13 +48,15 @@ export default {
         bsc: 'https://bsc-dataseed.binance.org/',
         ply: 'https://polygon-rpc.com/',
         etc: 'https://www.ethercluster.com/etc',
-        vls: 'https://evmexplorer.velas.com/rpc'
+        vls: 'https://evmexplorer.velas.com/rpc',
+        ava: 'https://api.avax.network/ext/bc/C/rpc'
     },
     cloBalance: "",
     bscBalance: "",
     plyBalance: "",
     etcBalance: "",
     vlsBalance: "",
+    avaBalance: "",
   }),
   mounted () {
     this.getBalance()
@@ -76,6 +79,7 @@ export default {
       const ply = new Web3(this.providerRPC.ply);
       const etc = new Web3(this.providerRPC.etc);
       const vls = new Web3(this.providerRPC.vls);
+      const ava = new Web3(this.providerRPC.ava);
 
       var wallet = clo.eth.accounts.privateKeyToAccount(this.privateKey).address
 
@@ -97,6 +101,10 @@ export default {
 
       vls.eth.getBalance(wallet).then(balance => {
           this.vlsBalance = "Address: " + wallet + " has " + balance + " WEI on Velas"
+      })
+
+      ava.eth.getBalance(wallet).then(balance => {
+          this.avaBalance = "Address: " + wallet + " has " + balance + " WEI on Avalanche"
       })
     }
   }
