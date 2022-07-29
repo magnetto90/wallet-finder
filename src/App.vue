@@ -29,12 +29,13 @@
         >
           Get Balance
         </v-btn>
-        <p>{{cloBalance}}</p>
-        <p>{{bscBalance}}</p>
-        <p>{{plyBalance}}</p>
-        <p>{{etcBalance}}</p>
-        <p>{{vlsBalance}}</p>
-        <p>{{avaBalance}}</p>
+        <h3>Wallet: {{wallet}}</h3>
+        <p>{{cloBalance}} WEI on <a :href="'https://explorer.callisto.network/address/'+wallet+'/transactions'" target="_blank">Callisto Network</a></p>
+        <p>{{bscBalance}} WEI on <a :href="'https://bscscan.com/address/'+wallet" target="_blank">Binance Smart Chain</a></p>
+        <p>{{plyBalance}} WEI on <a :href="'https://polygonscan.com/address/'+wallet" target="_blank">Polygon</a></p>
+        <p>{{etcBalance}} WEI on <a :href="'https://etcblockexplorer.com/address/'+wallet" target="_blank">Ethereum Classic</a></p>
+        <p>{{vlsBalance}} WEI on <a :href="'https://evmexplorer.velas.com/'+wallet+'/transactions'" target="_blank">Velas</a></p>
+        <p>{{avaBalance}} WEI on <a :href="'https://avascan.info/blockchain/c/address/'+wallet" target="_blank">Avalanche</a></p>
       </v-card>
     </v-container>
 
@@ -56,12 +57,13 @@ export default {
         vls: 'https://evmexplorer.velas.com/rpc',
         ava: 'https://api.avax.network/ext/bc/C/rpc'
     },
+    wallet: "",
     cloBalance: "",
     bscBalance: "",
     plyBalance: "",
     etcBalance: "",
     vlsBalance: "",
-    avaBalance: "",
+    avaBalance: ""
   }),
   mounted () {
     this.getBalance()
@@ -79,6 +81,13 @@ export default {
         this.getBalance()
       },
     getBalance: function () {
+      this.cloBalance = ""
+      this.bscBalance = ""
+      this.plyBalance = ""
+      this.etcBalance = ""
+      this.vlsBalance = ""
+      this.avaBalance = ""
+
       const clo = new Web3(this.providerRPC.clo);
       const bsc = new Web3(this.providerRPC.bsc);
       const ply = new Web3(this.providerRPC.ply);
@@ -86,30 +95,32 @@ export default {
       const vls = new Web3(this.providerRPC.vls);
       const ava = new Web3(this.providerRPC.ava);
 
-      var wallet = clo.eth.accounts.privateKeyToAccount(this.privateKey).address
+      var account = clo.eth.accounts.privateKeyToAccount(this.privateKey).address
 
-      clo.eth.getBalance(wallet).then(balance => {
-          this.cloBalance = "Address: " + wallet + " has " + balance + " WEI on Callisto Network"
+      this.wallet = account
+
+      clo.eth.getBalance(account).then(balance => {
+          this.cloBalance = balance
       })
 
-      bsc.eth.getBalance(wallet).then(balance => {
-          this.bscBalance = "Address: " + wallet + " has " + balance + " WEI on Binance Smart Chain"
+      bsc.eth.getBalance(account).then(balance => {
+          this.bscBalance = balance
       })
 
-      ply.eth.getBalance(wallet).then(balance => {
-          this.plyBalance = "Address: " + wallet + " has " + balance + " WEI on Polygon"
+      ply.eth.getBalance(account).then(balance => {
+          this.plyBalance = balance
       })
 
-      etc.eth.getBalance(wallet).then(balance => {
-          this.etcBalance = "Address: " + wallet + " has " + balance + " WEI on Ethereum Classic"
+      etc.eth.getBalance(account).then(balance => {
+          this.etcBalance = balance
       })
 
-      vls.eth.getBalance(wallet).then(balance => {
-          this.vlsBalance = "Address: " + wallet + " has " + balance + " WEI on Velas"
+      vls.eth.getBalance(account).then(balance => {
+          this.vlsBalance = balance
       })
 
-      ava.eth.getBalance(wallet).then(balance => {
-          this.avaBalance = "Address: " + wallet + " has " + balance + " WEI on Avalanche"
+      ava.eth.getBalance(account).then(balance => {
+          this.avaBalance = balance
       })
     }
   }
@@ -127,6 +138,14 @@ export default {
 
   h1 {
     text-align: center;
+  }
+
+  h3 {
+    margin-bottom: 20px;
+  }
+
+  p {
+    margin-left: 20px;
   }
 
   .v-btn{
