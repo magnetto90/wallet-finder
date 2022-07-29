@@ -5,10 +5,12 @@
     <v-container>
       <v-card class="main">
         
-        <v-card-title>Wallet Finder</v-card-title>
+        <h1>Wallet Finder</h1>
+        <v-divider class="ma-4"></v-divider>
 
         <v-btn
           @click="generatePrivateKey()"
+          outlined
         >
           Generate Private Key
         </v-btn>
@@ -18,6 +20,7 @@
         </v-text-field>
         <v-btn
           @click="getBalance(privateKey)"
+          outlined
         >
           Get Balance
         </v-btn>
@@ -38,7 +41,7 @@ const Web3 = require('web3');
 export default {
   name: 'App',
   data: () => ({
-    privateKey: "",
+    privateKey: "0x0000000000000000000000000000000000000000000000000000000000000010",
     providerRPC: {
         clo: 'https://rpc.callisto.network/',
         bsc: 'https://bsc-dataseed.binance.org/',
@@ -52,6 +55,9 @@ export default {
     etcBalance: "",
     vlsBalance: "",
   }),
+  mounted () {
+    this.getBalance()
+  },
   methods: {
     generatePrivateKey: function () {
         var result           = '';
@@ -61,6 +67,8 @@ export default {
           result += characters.charAt(Math.floor(Math.random() * charactersLength));
         }
         this.privateKey = '0x'+result;
+
+        this.getBalance()
       },
     getBalance: function () {
       const clo = new Web3(this.providerRPC.clo);
@@ -88,7 +96,7 @@ export default {
       })
 
       vls.eth.getBalance(wallet).then(balance => {
-          this.vlsBalance = "Address: " + wallet + " has " + balance + " on Velas"
+          this.vlsBalance = "Address: " + wallet + " has " + balance + " WEI on Velas"
       })
     }
   }
@@ -102,5 +110,13 @@ export default {
 
   * {
     font-family: "courier" !important;
+  }
+
+  h1 {
+    text-align: center;
+  }
+
+  .v-btn{
+    margin: 20px;
   }
 </style>
