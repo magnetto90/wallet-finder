@@ -2,27 +2,33 @@
   <v-app
     style="background: linear-gradient(180deg, rgba(74,54,83,1) 0%, rgba(8,0,11,0.9374124649859944) 45%);"
   >
-    <v-card>
-      <v-btn
-        @click="generatePrivateKey()"
-      >
-        Generate Private Key
-      </v-btn>
-      <v-text-field
-        v-model="privateKey"
-      >
-      </v-text-field>
-      <v-btn
-        @click="getBalance(privateKey)"
-      >
-        Get Balance
-      </v-btn>
-      <p>{{cloBalance}}</p>
-      <p>{{bscBalance}}</p>
-      <p>{{plyBalance}}</p>
-      <p>{{etcBalance}}</p>
-      <p>{{vlsBalance}}</p>
-    </v-card>
+    <v-container>
+      <v-card class="main">
+        
+        <v-card-title>Wallet Finder</v-card-title>
+
+        <v-btn
+          @click="generatePrivateKey()"
+        >
+          Generate Private Key
+        </v-btn>
+        <v-text-field
+          v-model="privateKey"
+        >
+        </v-text-field>
+        <v-btn
+          @click="getBalance(privateKey)"
+        >
+          Get Balance
+        </v-btn>
+        <p>{{cloBalance}}</p>
+        <p>{{bscBalance}}</p>
+        <p>{{plyBalance}}</p>
+        <p>{{etcBalance}}</p>
+        <p>{{vlsBalance}}</p>
+      </v-card>
+    </v-container>
+
   </v-app>
 </template>
 
@@ -66,19 +72,19 @@ export default {
       var wallet = clo.eth.accounts.privateKeyToAccount(this.privateKey).address
 
       clo.eth.getBalance(wallet).then(balance => {
-          this.cloBalance = "Address: " + wallet + " has " + balance + " on Callisto Network"
+          this.cloBalance = "Address: " + wallet + " has " + balance + " WEI on Callisto Network"
       })
 
       bsc.eth.getBalance(wallet).then(balance => {
-          this.bscBalance = "Address: " + wallet + " has " + balance + " on Binance Smart Chain"
+          this.bscBalance = "Address: " + wallet + " has " + balance + " WEI on Binance Smart Chain"
       })
 
       ply.eth.getBalance(wallet).then(balance => {
-          this.plyBalance = "Address: " + wallet + " has " + balance + " on Polygon"
+          this.plyBalance = "Address: " + wallet + " has " + balance + " WEI on Polygon"
       })
 
       etc.eth.getBalance(wallet).then(balance => {
-          this.etcBalance = "Address: " + wallet + " has " + balance + " on Ethereum Classic"
+          this.etcBalance = "Address: " + wallet + " has " + balance + " WEI on Ethereum Classic"
       })
 
       vls.eth.getBalance(wallet).then(balance => {
@@ -90,10 +96,11 @@ export default {
 </script>
 
 <style>
-  .contacto{
-    background-color: #FD3592;
-    padding: 4px;
-    border-radius: 10px;
-    text-align: center;
+  .main{
+    padding: 20px;
+  }
+
+  * {
+    font-family: "courier" !important;
   }
 </style>
