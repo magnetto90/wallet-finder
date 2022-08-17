@@ -1,6 +1,6 @@
 <template>
   <v-app
-    style="background: linear-gradient(180deg, rgba(74,54,83,1) 0%, rgba(8,0,11,0.9374124649859944) 45%);"
+    :style="'background: linear-gradient(180deg, #'+privateKey.slice(6,12)+' 0%, #'+privateKey.slice(12,18)+' 45%);'"
   >
     <v-container>
       <v-card 
@@ -8,7 +8,7 @@
         shaped
       >
         
-        <h1>Wallet Finder</h1>
+        <h1 :style="'color: #'+privateKey.slice(18,24)">Wallet Finder</h1>
         <v-divider class="ma-4"></v-divider>
 
         <v-btn
@@ -195,5 +195,11 @@ export default {
 
   .v-btn{
     margin: 20px;
+  }
+
+  .face{
+    max-width: 100px;
+    display: block;
+    margin: 0 auto;
   }
 </style>
