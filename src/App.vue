@@ -36,12 +36,20 @@
           Get Balance 
         </v-btn>
         <h3>{{totalUSD}} USD</h3>
-        <p 
+        <div 
           v-for="chain in chains"
           :key="chain.name"
         >
-          {{chain.balance}} {{chain.symbol}} ({{chain.toUSD}} USD) on <a :href="chain.explorer+wallet" target="_blank">{{chain.name}}</a> (Nonce: {{chain.nonce}})
-        </p>
+          <h3>{{chain.balance}} {{chain.symbol}} ({{chain.toUSD}} USD) on <a :href="chain.explorer+wallet" target="_blank">{{chain.name}}</a> (Nonce: {{chain.nonce}})</h3>
+          <ul>
+            <li 
+              v-for="erc20 in chain.ERC20Balances"
+              :key="erc20.symbol"
+            >
+              {{erc20.balance}} {{erc20.symbol}} ({{erc20.toUSD}} USD)
+            </li>
+          </ul>
+        </div>
       </v-card>
     </v-container>
 
@@ -58,6 +66,12 @@ export default {
     privateKey: "",
     wallet:"",
     totalUSD: 0,
+    ERC20ABI: [
+      {"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},
+      {"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},
+      {"constant":true,"inputs":[{"name":"who","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},
+      {"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},
+    ],
     chains: {
         clo: {
           name: 'Callisto Network',
@@ -67,7 +81,9 @@ export default {
           gecko: 'callisto',
           balance: 0,
           toUSD: 0,
-          nonce: 0
+          nonce: 0,
+          ERC20s: [],
+          ERC20Balances: []
         },
         eth: {
           name: 'Ethereum',
@@ -77,7 +93,18 @@ export default {
           gecko: 'ethereum',
           balance: 0,
           toUSD: 0,
-          nonce: 0
+          nonce: 0,
+          ERC20s: [
+            {
+              address: '0xdac17f958d2ee523a2206206994597c13d831ec7',
+              gecko: 'tether'
+            },
+            {
+              address: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',
+              gecko: 'wrapped-bitcoin'
+            }
+          ],
+          ERC20Balances: []
         },
         bsc: {
           name: 'Binance Smart Chain',
@@ -87,7 +114,9 @@ export default {
           gecko: 'binancecoin',
           balance: 0,
           toUSD: 0,
-          nonce: 0
+          nonce: 0,
+          ERC20s: [],
+          ERC20Balances: []
         },
         ply: {
           name: 'Polygon',
@@ -97,7 +126,9 @@ export default {
           gecko: 'matic-network',
           balance: 0,
           toUSD: 0,
-          nonce: 0
+          nonce: 0,
+          ERC20s: [],
+          ERC20Balances: []
         },
         etc: {
           name: 'Ethereum Classic',
@@ -107,7 +138,9 @@ export default {
           gecko: 'ethereum-classic',
           balance: 0,
           toUSD: 0,
-          nonce: 0
+          nonce: 0,
+          ERC20s: [],
+          ERC20Balances: []
         },
         ava: {
           name: 'Avalanche',
@@ -117,8 +150,34 @@ export default {
           gecko: 'avalanche-2',
           balance: 0,
           toUSD: 0,
-          nonce: 0
+          nonce: 0,
+          ERC20s: [],
+          ERC20Balances: []
         },
+        opt: {
+          name: 'Optimism',
+          symbol: 'ETH',
+          rpc: 'https://mainnet.optimism.io',
+          explorer: 'https://optimistic.etherscan.io/address/',
+          gecko: 'optimism',
+          balance: 0,
+          toUSD: 0,
+          nonce: 0,
+          ERC20s: [],
+          ERC20Balances: []
+        },
+        gns: {
+          name: 'Gnosis',
+          symbol: 'xDAI',
+          rpc: 'https://rpc.gnosischain.com',
+          explorer: 'https://gnosisscan.io/address/',
+          gecko: 'gnosis',
+          balance: 0,
+          toUSD: 0,
+          nonce: 0,
+          ERC20s: [],
+          ERC20Balances: []
+        }
     }
 
   }),
@@ -140,11 +199,13 @@ export default {
         this.getBalances()
       },
     getBalances: function () {
-      Object.keys(this.chains).forEach(element => {
+      this.totalUSD = 0;
+
+      Object.keys(this.chains).forEach(async element => {
 
         const rpc = new Web3(this.chains[element].rpc)
 
-        rpc.eth.getBalance(this.wallet).then(async balance => {
+        rpc.eth.getBalance(this.wallet).then(balance => {
           this.chains[element].balance = rpc.utils.fromWei(balance)
           rpc.eth.getTransactionCount(this.wallet).then(nonce => {
             this.chains[element].nonce = nonce
@@ -162,6 +223,39 @@ export default {
             //getPrice(apiID);
           });
         })
+
+        if(this.chains[element].ERC20s.length > 0) {
+          this.chains[element].ERC20Balances = []
+          this.chains[element].ERC20s.forEach(async erc20 => {
+            var contract = new rpc.eth.Contract(this.ERC20ABI, erc20.address);
+            let symbol = await contract.methods.symbol().call()
+            let name = await contract.methods.name().call()
+            let decimals = await contract.methods.decimals().call()
+            let balance = (await contract.methods.balanceOf(this.wallet).call())/10**decimals
+            let toUSD
+
+            axios.get('https://api.coingecko.com/api/v3/coins/'+erc20.gecko)
+            .then(res => {
+              toUSD = res.data.market_data.current_price.usd * balance
+
+              this.chains[element].ERC20Balances.push({symbol: symbol, name: name, balance: balance, toUSD: toUSD, decimals: decimals})
+
+              this.totalUSD += toUSD
+            })
+            .catch(error => {
+              console.error(error);
+              //retry if error
+              //getPrice(apiID);
+            });
+
+            
+
+            console.log(this.chains[element].ERC20Balances)
+          })
+            
+
+
+        }
       });
     }
   }
