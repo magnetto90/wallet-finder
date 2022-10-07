@@ -11,12 +11,6 @@
         <h1 :style="'color: #'+privateKey.slice(18,24)">Wallet Finder</h1>
         <v-divider class="ma-4"></v-divider>
 
-        <v-btn
-          @click="generatePrivateKey()"
-          outlined
-        >
-          Generate Private Key
-        </v-btn>
         <v-text-field
           v-model="privateKey"
           :success="privateKey.length == 66"
@@ -24,19 +18,30 @@
         >
         </v-text-field>
         <v-btn
-          @click="getBalance(privateKey)"
+          @click="generatePrivateKey()"
           outlined
         >
-          Get Balance
+          Generate Private Key
         </v-btn>
-        <h3>Wallet: {{wallet}}</h3>
-        <p>{{cloBalance}} WEI on <a :href="'https://explorer.callisto.network/address/'+wallet+'/transactions'" target="_blank">Callisto Network</a> (Nonce: {{cloNonce}})</p>
-        <p>{{ethBalance}} WEI on <a :href="'https://etherscan.io/address/'+wallet" target="_blank">Ethereum</a> (Nonce: {{ethNonce}})</p>        
-        <p>{{bscBalance}} WEI on <a :href="'https://bscscan.com/address/'+wallet" target="_blank">Binance Smart Chain</a> (Nonce: {{bscNonce}})</p>
-        <p>{{plyBalance}} WEI on <a :href="'https://polygonscan.com/address/'+wallet" target="_blank">Polygon</a> (Nonce: {{plyNonce}})</p>
-        <p>{{etcBalance}} WEI on <a :href="'https://etcblockexplorer.com/address/'+wallet" target="_blank">Ethereum Classic</a> (Nonce: {{etcNonce}})</p>
-        <p>{{vlsBalance}} WEI on <a :href="'https://evmexplorer.velas.com/'+wallet+'/transactions'" target="_blank">Velas</a> (Nonce: {{vlsNonce}})</p>
-        <p>{{avaBalance}} WEI on <a :href="'https://avascan.info/blockchain/c/address/'+wallet" target="_blank">Avalanche</a> (Nonce: {{avaNonce}})</p>
+        <v-divider class="ma-4"></v-divider>
+        <h3>Wallet:</h3>
+        <v-text-field
+          v-model="wallet"
+        >
+        </v-text-field>
+        <v-btn
+          @click="getBalances(privateKey)"
+          outlined
+        >
+          Get Balance 
+        </v-btn>
+        <h3>{{totalUSD}} USD</h3>
+        <p 
+          v-for="chain in chains"
+          :key="chain.name"
+        >
+          {{chain.balance}} {{chain.symbol}} ({{chain.toUSD}} USD) on <a :href="chain.explorer+wallet" target="_blank">{{chain.name}}</a> (Nonce: {{chain.nonce}})
+        </p>
       </v-card>
     </v-container>
 
@@ -44,39 +49,81 @@
 </template>
 
 <script>
-const Web3 = require('web3');
+import axios from "axios"
+import Web3 from "web3"
 
 export default {
   name: 'App',
   data: () => ({
-    privateKey: "0x0000000000000000000000000000000000000000000000000000000000000010",
-    providerRPC: {
-        clo: 'https://rpc.callisto.network/',
-        eth: 'https://rpc.ankr.com/eth',
-        bsc: 'https://bsc-dataseed.binance.org/',
-        ply: 'https://polygon-rpc.com/',
-        etc: 'https://www.ethercluster.com/etc',
-        vls: 'https://evmexplorer.velas.com/rpc',
-        ava: 'https://api.avax.network/ext/bc/C/rpc',
-    },
-    wallet: "",
-    cloBalance: "",
-    ethBalance: "",    
-    bscBalance: "",
-    plyBalance: "",
-    etcBalance: "",
-    vlsBalance: "",
-    avaBalance: "",
-    cloNonce: "",
-    ethNonce: "",
-    bscNonce: "",
-    plyNonce: "",
-    etcNonce: "",
-    vlsNonce: "",
-    avaNonce: "",
+    privateKey: "",
+    wallet:"",
+    totalUSD: 0,
+    chains: {
+        clo: {
+          name: 'Callisto Network',
+          symbol: 'CLO',
+          rpc: 'https://rpc.callisto.network/',
+          explorer: 'https://explorer.callisto.network/address/',
+          gecko: 'callisto',
+          balance: 0,
+          toUSD: 0,
+          nonce: 0
+        },
+        eth: {
+          name: 'Ethereum',
+          symbol: 'ETH',
+          rpc: 'https://rpc.ankr.com/eth',
+          explorer: 'https://etherscan.io/address/',
+          gecko: 'ethereum',
+          balance: 0,
+          toUSD: 0,
+          nonce: 0
+        },
+        bsc: {
+          name: 'Binance Smart Chain',
+          symbol: 'BSC',
+          rpc: 'https://bsc-dataseed.binance.org/',
+          explorer: 'https://bscscan.com/address/',
+          gecko: 'binancecoin',
+          balance: 0,
+          toUSD: 0,
+          nonce: 0
+        },
+        ply: {
+          name: 'Polygon',
+          rpc: 'https://polygon-rpc.com/',
+          symbol: 'MATIC',
+          explorer: 'https://polygonscan.com/address/',
+          gecko: 'matic-network',
+          balance: 0,
+          toUSD: 0,
+          nonce: 0
+        },
+        etc: {
+          name: 'Ethereum Classic',
+          symbol: 'ETC',
+          rpc: 'https://www.ethercluster.com/etc',
+          explorer: 'https://etcblockexplorer.com/address/',
+          gecko: 'ethereum-classic',
+          balance: 0,
+          toUSD: 0,
+          nonce: 0
+        },
+        ava: {
+          name: 'Avalanche',
+          symbol: 'AVAX',
+          rpc: 'https://api.avax.network/ext/bc/C/rpc',
+          explorer: 'https://avascan.info/blockchain/c/address/',
+          gecko: 'avalanche-2',
+          balance: 0,
+          toUSD: 0,
+          nonce: 0
+        },
+    }
+
   }),
   mounted () {
-    this.getBalance()
+    this.generatePrivateKey()
   },
   methods: {
     generatePrivateKey: function () {
@@ -88,85 +135,34 @@ export default {
         }
         this.privateKey = '0x'+result;
 
-        this.getBalance()
+        this.wallet = new Web3().eth.accounts.privateKeyToAccount(this.privateKey).address
+
+        this.getBalances()
       },
-    getBalance: function () {
-      this.cloBalance = ""
-      this.ethBalance = ""      
-      this.bscBalance = ""
-      this.plyBalance = ""
-      this.etcBalance = ""
-      this.vlsBalance = ""
-      this.avaBalance = ""
-      this.cloNonce = ""
-      this.ethNonce = ""      
-      this.bscNonce = ""
-      this.plyNonce = ""
-      this.etcNonce = ""
-      this.vlsNonce = ""
-      this.avaNonce = ""
+    getBalances: function () {
+      Object.keys(this.chains).forEach(element => {
 
-      const clo = new Web3(this.providerRPC.clo);
-      const eth = new Web3(this.providerRPC.eth);
-      const bsc = new Web3(this.providerRPC.bsc);      
-      const ply = new Web3(this.providerRPC.ply);
-      const etc = new Web3(this.providerRPC.etc);
-      const vls = new Web3(this.providerRPC.vls);
-      const ava = new Web3(this.providerRPC.ava);
+        const rpc = new Web3(this.chains[element].rpc)
 
-      var account = clo.eth.accounts.privateKeyToAccount(this.privateKey).address
-
-      this.wallet = account
-
-      clo.eth.getBalance(account).then(balance => {
-          this.cloBalance = balance
-          clo.eth.getTransactionCount(account).then(nonce => {
-            this.cloNonce = nonce
+        rpc.eth.getBalance(this.wallet).then(async balance => {
+          this.chains[element].balance = rpc.utils.fromWei(balance)
+          rpc.eth.getTransactionCount(this.wallet).then(nonce => {
+            this.chains[element].nonce = nonce
           })
-      })
 
-      eth.eth.getBalance(account).then(balance => {
-          this.ethBalance = balance
-          eth.eth.getTransactionCount(account).then(nonce => {
-            this.ethNonce = nonce
-          })
-      })      
+          axios.get('https://api.coingecko.com/api/v3/coins/'+this.chains[element].gecko)
+          .then(res => {
+            this.chains[element].toUSD = res.data.market_data.current_price.usd * this.chains[element].balance
 
-      bsc.eth.getBalance(account).then(balance => {
-          this.bscBalance = balance
-          bsc.eth.getTransactionCount(account).then(nonce => {
-            this.bscNonce = nonce
+            this.totalUSD += this.chains[element].toUSD
           })
-      })
-
-      ply.eth.getBalance(account).then(balance => {
-          this.plyBalance = balance
-          ply.eth.getTransactionCount(account).then(nonce => {
-            this.plyNonce = nonce
-          })
-      })
-
-      etc.eth.getBalance(account).then(balance => {
-          this.etcBalance = balance
-          etc.eth.getTransactionCount(account).then(nonce => {
-            this.etcNonce = nonce
-          })
-      })
-
-      vls.eth.getBalance(account).then(balance => {
-          this.vlsBalance = balance
-          vls.eth.getTransactionCount(account).then(nonce => {
-            this.vlsNonce = nonce
-          })
-      })
-
-      ava.eth.getBalance(account).then(balance => {
-          this.avaBalance = balance
-          ava.eth.getTransactionCount(account).then(nonce => {
-            this.avaNonce = nonce
-          })
-      })
-  
+          .catch(error => {
+            console.error(error);
+            //retry if error
+            //getPrice(apiID);
+          });
+        })
+      });
     }
   }
 };
