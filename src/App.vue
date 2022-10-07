@@ -15,6 +15,7 @@
           v-model="privateKey"
           :success="privateKey.length == 66"
           :error="privateKey.length != 66"
+          :keydown="updateWallet()"
         >
         </v-text-field>
         <v-btn
@@ -24,7 +25,7 @@
           Generate Private Key
         </v-btn>
         <v-divider class="ma-4"></v-divider>
-        <h3>Wallet:</h3>
+        <h3>Wallet ({{totalUSD}} USD):</h3>
         <v-text-field
           v-model="wallet"
         >
@@ -35,7 +36,6 @@
         >
           Get Balance 
         </v-btn>
-        <h3>{{totalUSD}} USD</h3>
         <div 
           v-for="chain in chains"
           :key="chain.name"
@@ -49,6 +49,7 @@
               {{erc20.balance}} {{erc20.symbol}} <span v-if="erc20.toUSD !== -1">({{erc20.toUSD}} USD)</span>
             </li>
           </ul>
+          <v-divider class="ma-4"></v-divider>
         </div>
       </v-card>
     </v-container>
@@ -218,6 +219,13 @@ export default {
 
         this.getBalances()
       },
+    updateWallet: function () {
+      if(this.privateKey.length == 66)
+      {
+        this.wallet = new Web3().eth.accounts.privateKeyToAccount(this.privateKey).address
+      }
+      
+    },
     getBalances: function () {
       this.totalUSD = 0;
 
