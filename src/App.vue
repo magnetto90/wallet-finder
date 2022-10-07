@@ -46,7 +46,7 @@
               v-for="erc20 in chain.ERC20Balances"
               :key="erc20.symbol"
             >
-              {{erc20.balance}} {{erc20.symbol}} ({{erc20.toUSD}} USD)
+              {{erc20.balance}} {{erc20.symbol}} <span v-if="erc20.toUSD !== -1">({{erc20.toUSD}} USD)</span>
             </li>
           </ul>
         </div>
@@ -86,7 +86,22 @@ export default {
             {
               address: '0x9FaE2529863bD691B4A7171bDfCf33C7ebB10a65',
               gecko: 'soy-finance'
-            }
+            },            
+            {
+              address: '0xbf6c50889d3a620eb42C0F188b65aDe90De958c4',
+              gecko: 'tether'
+            },
+            {
+              address: '0x1eAa43544dAa399b87EEcFcC6Fa579D5ea4A6187'
+            },
+            {
+              address: '0xcC208c32Cc6919af5d8026dAB7A3eC7A57CD1796',
+              gecko: 'ethereum'
+            },
+            {
+              address: '0xcCDe29903E621Ca12DF33BB0aD9D1ADD7261Ace9',
+              gecko: 'binancecoin'
+            },
           ],
           ERC20Balances: []
         },
@@ -107,7 +122,7 @@ export default {
             {
               address: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',
               gecko: 'wrapped-bitcoin'
-            }
+            },
           ],
           ERC20Balances: []
         },
@@ -239,23 +254,23 @@ export default {
             let balance = (await contract.methods.balanceOf(this.wallet).call())/10**decimals
             let toUSD
 
-            axios.get('https://api.coingecko.com/api/v3/coins/'+erc20.gecko)
-            .then(res => {
-              toUSD = res.data.market_data.current_price.usd * balance
+            if(erc20.gecko){
+              axios.get('https://api.coingecko.com/api/v3/coins/'+erc20.gecko)
+              .then(res => {
+                toUSD = res.data.market_data.current_price.usd * balance
 
-              this.chains[element].ERC20Balances.push({symbol: symbol, name: name, balance: balance, toUSD: toUSD, decimals: decimals})
+                this.chains[element].ERC20Balances.push({symbol: symbol, name: name, balance: balance, toUSD: toUSD, decimals: decimals})
 
-              this.totalUSD += toUSD
-            })
-            .catch(error => {
-              console.error(error);
-              //retry if error
-              //getPrice(apiID);
-            });
-
-            
-
-            console.log(this.chains[element].ERC20Balances)
+                this.totalUSD += toUSD
+              })
+              .catch(error => {
+                console.error(error);
+                //retry if error
+                //getPrice(apiID);
+              });
+            }else{
+              this.chains[element].ERC20Balances.push({symbol: symbol, name: name, balance: balance, toUSD: -1, decimals: decimals})
+            }
           })
             
 
