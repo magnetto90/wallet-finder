@@ -82,7 +82,12 @@ export default {
           balance: 0,
           toUSD: 0,
           nonce: 0,
-          ERC20s: [],
+          ERC20s: [
+            {
+              address: '0x9FaE2529863bD691B4A7171bDfCf33C7ebB10a65',
+              gecko: 'soy-finance'
+            }
+          ],
           ERC20Balances: []
         },
         eth: {
