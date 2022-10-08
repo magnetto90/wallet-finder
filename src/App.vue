@@ -15,13 +15,15 @@
           v-model="privateKey"
           :success="privateKey.length == 66"
           :error="privateKey.length != 66"
+          :append-icon="icon"
+          @click:append="generatePrivateKey()"
         >
         </v-text-field>
         <v-btn
-          @click="generatePrivateKey()"
+          @click="calcPublicKey()"
           outlined
         >
-          Generate Private Key
+          Calc Public Key
         </v-btn>
         <v-divider class="ma-4"></v-divider>
         <h3>Wallet ({{totalUSD}} USD):</h3>
@@ -63,6 +65,8 @@ import Web3 from "web3"
 export default {
   name: 'App',
   data: () => ({
+    icons: ["mdi-dice-5", "mdi-dice-4", "mdi-dice-3", "mdi-dice-2", "mdi-dice-1", "mdi-dice-6"],
+    iconIndex: 0,
     privateKey: "",
     wallet:"",
     totalUSD: 0,
@@ -201,11 +205,20 @@ export default {
     }
 
   }),
+  computed: {
+      icon () {
+        return this.icons[this.iconIndex]
+    },
+  },
   mounted () {
     this.generatePrivateKey()
   },
   methods: {
     generatePrivateKey: function () {
+        this.iconIndex === this.icons.length - 1
+          ? this.iconIndex = 0
+          : this.iconIndex++
+
         var result           = '';
         var characters       = 'ABCDEFabcdef0123456789';
         var charactersLength = characters.length;
@@ -215,14 +228,19 @@ export default {
         this.privateKey = '0x'+result;
 
         this.wallet = new Web3().eth.accounts.privateKeyToAccount(this.privateKey).address
+
+        this.getBalances();
       },
+    calcPublicKey: function () {
+      this.wallet = new Web3().eth.accounts.privateKeyToAccount(this.privateKey).address
+      this.getBalances();
+    },
     getBalances: function () {
       this.totalUSD = 0;
 
       Object.keys(this.chains).forEach(async element => {
         
         const rpc = new Web3(this.chains[element].rpc)
-        console.log(this.wallet)
         rpc.eth.getBalance(this.wallet).then(balance => {
           this.chains[element].balance = rpc.utils.fromWei(balance)
           rpc.eth.getTransactionCount(this.wallet).then(nonce => {
