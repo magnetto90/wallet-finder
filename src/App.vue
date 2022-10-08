@@ -216,13 +216,6 @@ export default {
 
         this.wallet = new Web3().eth.accounts.privateKeyToAccount(this.privateKey).address
       },
-    updateWallet: function () {
-      if(this.privateKey.length == 66)
-      {
-        this.wallet = new Web3().eth.accounts.privateKeyToAccount(this.privateKey).address
-      }
-      
-    },
     getBalances: function () {
       this.totalUSD = 0;
 
