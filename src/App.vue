@@ -15,7 +15,6 @@
           v-model="privateKey"
           :success="privateKey.length == 66"
           :error="privateKey.length != 66"
-          :keydown="updateWallet()"
         >
         </v-text-field>
         <v-btn
@@ -31,7 +30,7 @@
         >
         </v-text-field>
         <v-btn
-          @click="getBalances(privateKey)"
+          @click="getBalances()"
           outlined
         >
           Get Balance 
@@ -216,8 +215,6 @@ export default {
         this.privateKey = '0x'+result;
 
         this.wallet = new Web3().eth.accounts.privateKeyToAccount(this.privateKey).address
-
-        this.getBalances()
       },
     updateWallet: function () {
       if(this.privateKey.length == 66)
@@ -230,9 +227,9 @@ export default {
       this.totalUSD = 0;
 
       Object.keys(this.chains).forEach(async element => {
-
+        
         const rpc = new Web3(this.chains[element].rpc)
-
+        console.log(this.wallet)
         rpc.eth.getBalance(this.wallet).then(balance => {
           this.chains[element].balance = rpc.utils.fromWei(balance)
           rpc.eth.getTransactionCount(this.wallet).then(nonce => {
@@ -280,9 +277,6 @@ export default {
               this.chains[element].ERC20Balances.push({symbol: symbol, name: name, balance: balance, toUSD: -1, decimals: decimals})
             }
           })
-            
-
-
         }
       });
     }
