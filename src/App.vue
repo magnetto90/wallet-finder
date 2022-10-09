@@ -10,7 +10,7 @@
         
         <h1 :style="'color: #'+privateKey.slice(18,24)">Wallet Finder</h1>
         <v-divider class="ma-4"></v-divider>
-
+        <h3>Private Key:</h3>
         <v-text-field
           v-model="privateKey"
           :success="privateKey.length == 66"
@@ -68,7 +68,7 @@ export default {
     icons: ["mdi-dice-5", "mdi-dice-4", "mdi-dice-3", "mdi-dice-2", "mdi-dice-1", "mdi-dice-6"],
     iconIndex: 0,
     privateKey: "",
-    wallet:"",
+    wallet: "",
     totalUSD: 0,
     ERC20ABI: [
       {"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},
@@ -144,6 +144,14 @@ export default {
               address: '0x55d398326f99059ff775485246999027b3197955',
               gecko: 'tether'
             },
+            {
+              address: '0x2170Ed0880ac9A755fd29B2688956BD959F933F8',
+              gecko: 'ethereum'
+            },
+            {
+              address: '0xe9e7cea3dedca5984780bafc599bd69add087d56',
+              gecko: 'binance-usd'
+            },
           ],
           ERC20Balances: []
         },
@@ -156,7 +164,16 @@ export default {
           balance: 0,
           toUSD: 0,
           nonce: 0,
-          ERC20s: [],
+          ERC20s: [
+            {
+              address: '0xc2132d05d31c914a87c6611c10748aeb04b58e8f',
+              gecko: 'tether'
+            },
+            {
+              address: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',
+              gecko: 'ethereum'
+            },
+          ],
           ERC20Balances: []
         },
         etc: {
