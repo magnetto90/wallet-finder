@@ -10,7 +10,7 @@
         
         <h1 :style="'color: #'+privateKey.slice(18,24)">Wallet Finder</h1>
         <v-divider class="ma-4"></v-divider>
-
+        <h3>Private Key:</h3>
         <v-text-field
           v-model="privateKey"
           :success="privateKey.length == 66"
