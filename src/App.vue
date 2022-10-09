@@ -139,7 +139,12 @@ export default {
           balance: 0,
           toUSD: 0,
           nonce: 0,
-          ERC20s: [],
+          ERC20s: [            
+            {
+              address: '0x55d398326f99059ff775485246999027b3197955',
+              gecko: 'tether'
+            },
+          ],
           ERC20Balances: []
         },
         ply: {
